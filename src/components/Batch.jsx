@@ -1,8 +1,8 @@
-// components/Batch.jsx
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Attendance from "./Attendance";
 import { BASE_URL } from "../../config";
+import { motion } from "framer-motion";
 
 export default function Batch() {
   const location = useLocation();
@@ -18,7 +18,7 @@ export default function Batch() {
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState(null);
 
-  if (!user) return <p>User data missing. Please login again.</p>;
+  if (!user) return <p className="text-white text-center p-6">User data missing. Please login again.</p>;
   const courses = Array.isArray(user.course) ? user.course : [user.course];
 
   useEffect(() => {
@@ -83,47 +83,46 @@ export default function Batch() {
 
   const renderBatchTable = () => {
     const list = activeTab === "Persuing" ? batches.persuing : activeTab === "Completed" ? batches.completed : batches.pending;
-    if (loading) return <p className="text-blue-600 text-center py-4">Loading batches...</p>;
-    if (error) return <p className="text-red-600 text-center py-4">Error: {error}</p>;
-    if (!list.length) return <p className="text-gray-500 text-center py-4">No {activeTab.toLowerCase()} batches found.</p>;
+    if (loading) return <p className="text-blue-200 text-center py-4">Loading batches...</p>;
+    if (error) return <p className="text-red-400 text-center py-4">Error: {error}</p>;
+    if (!list.length) return <p className="text-gray-300 text-center py-4">No {activeTab.toLowerCase()} batches found.</p>;
 
     return (
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead className="bg-gray-50">
+      <div className="overflow-x-auto rounded-lg border border-blue-600/30">
+        <table className="min-w-full bg-blue-900/20 backdrop-blur-sm">
+          <thead className="bg-blue-800/50">
             <tr>
-              <th className="px-4 py-3 border-b">Subject</th>
-              <th className="px-4 py-3 border-b">Batch Name</th>
-              <th className="px-4 py-3 border-b">Faculty</th>
-              <th className="px-4 py-3 border-b">Start Date</th>
-              <th className="px-4 py-3 border-b">End Date</th>
-              <th className="px-4 py-3 border-b">Batch Time</th>
-              <th className="px-4 py-3 border-b">Actions</th>
+              <th className="px-3 py-3 border-b border-blue-600/30 text-white text-sm font-semibold text-left">Subject</th>
+              <th className="px-3 py-3 border-b border-blue-600/30 text-white text-sm font-semibold text-left">Batch Name</th>
+              <th className="px-3 py-3 border-b border-blue-600/30 text-white text-sm font-semibold text-left hidden md:table-cell">Faculty</th>
+              <th className="px-3 py-3 border-b border-blue-600/30 text-white text-sm font-semibold text-left hidden lg:table-cell">Start Date</th>
+              <th className="px-3 py-3 border-b border-blue-600/30 text-white text-sm font-semibold text-left hidden lg:table-cell">End Date</th>
+              <th className="px-3 py-3 border-b border-blue-600/30 text-white text-sm font-semibold text-left">Batch Time</th>
+              <th className="px-3 py-3 border-b border-blue-600/30 text-white text-sm font-semibold text-left">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-blue-600/20">
             {list.map((batch, idx) => (
-              <tr key={idx} className="hover:bg-gray-50">
-                <td className="px-4 py-3">{batch.subject || "N/A"}</td>
-                <td className="px-4 py-3">{batch.batchno || batch.batchname || "N/A"}</td>
-                <td className="px-4 py-3">{getFacultyName(batch.facultyid || batch.faculty)}</td>
-                <td className="px-4 py-3">{formatDate(batch.startdate || batch.date)}</td>
-                <td className="px-4 py-3">{formatDate(batch.ExceptedEnddate || batch.endate)}</td>
-                <td className="px-4 py-3">{batch.batch_time || "N/A"}</td>
-                <td className="px-4 py-3">
-                  <button
-                    type="button"
+              <tr key={idx} className="hover:bg-blue-800/30 transition duration-200">
+                <td className="px-3 py-3 text-white text-sm">{batch.subject || "N/A"}</td>
+                <td className="px-3 py-3 text-white text-sm">{batch.batchno || batch.batchname || "N/A"}</td>
+                <td className="px-3 py-3 text-blue-200 text-sm hidden md:table-cell">{getFacultyName(batch.facultyid || batch.faculty)}</td>
+                <td className="px-3 py-3 text-blue-200 text-sm hidden lg:table-cell">{formatDate(batch.startdate || batch.date)}</td>
+                <td className="px-3 py-3 text-blue-200 text-sm hidden lg:table-cell">{formatDate(batch.ExceptedEnddate || batch.endate)}</td>
+                <td className="px-3 py-3 text-blue-200 text-sm">{batch.batch_time || "N/A"}</td>
+                <td className="px-3 py-3">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={(e) => {
-                      e.preventDefault(); // ✅ stop navigation
-                      e.stopPropagation(); // ✅ stop bubbling
+                      e.preventDefault();
+                      e.stopPropagation();
                       fetchAttendance(batch);
                     }}
-                    className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                    className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm transition duration-200"
                   >
                     View Attendance
-                  </button>
-
-
+                  </motion.button>
                 </td>
               </tr>
             ))}
@@ -134,25 +133,27 @@ export default function Batch() {
   };
 
   const renderPendingList = () => {
-    if (loading) return <p className="text-blue-600 text-center py-4">Loading pending batches...</p>;
-    if (error) return <p className="text-red-600 text-center py-4">Error: {error}</p>;
-    if (!batches.pending.length) return <p className="text-gray-500 text-center py-4">No pending batches found.</p>;
+    if (loading) return <p className="text-blue-200 text-center py-4">Loading pending batches...</p>;
+    if (error) return <p className="text-red-400 text-center py-4">Error: {error}</p>;
+    if (!batches.pending.length) return <p className="text-gray-300 text-center py-4">No pending batches found.</p>;
 
     return (
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead className="bg-gray-50">
+      <div className="overflow-x-auto rounded-lg border border-blue-600/30">
+        <table className="min-w-full bg-blue-900/20 backdrop-blur-sm">
+          <thead className="bg-blue-800/50">
             <tr>
-              <th className="px-4 py-3 border-b">Subject Name</th>
-              <th className="px-4 py-3 border-b">Status</th>
+              <th className="px-4 py-3 border-b border-blue-600/30 text-white text-sm font-semibold text-left">Subject Name</th>
+              <th className="px-4 py-3 border-b border-blue-600/30 text-white text-sm font-semibold text-left">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-blue-600/20">
             {batches.pending.map((subject, idx) => (
-              <tr key={idx} className="hover:bg-gray-50">
-                <td className="px-4 py-3">{subject.subjectname || subject.subject || "N/A"}</td>
+              <tr key={idx} className="hover:bg-blue-800/30 transition duration-200">
+                <td className="px-4 py-3 text-white">{subject.subjectname || subject.subject || "N/A"}</td>
                 <td className="px-4 py-3">
-                  <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pending</span>
+                  <span className="px-3 py-1 bg-yellow-500/20 text-yellow-300 rounded-full text-xs font-medium border border-yellow-500/30">
+                    Pending
+                  </span>
                 </td>
               </tr>
             ))}
@@ -163,55 +164,141 @@ export default function Batch() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Batch Details</h2>
-
-      <div className="mb-6">
-        <label htmlFor="course" className="block mb-2 font-semibold text-gray-700">Select Course:</label>
-        <select
-          id="course"
-          value={selectedCourse}
-          onChange={(e) => setSelectedCourse(e.target.value)}
-          className="w-full md:w-1/2 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+    <div className="flex flex-col items-center px-4 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-6xl mx-auto w-full"
+      >
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-center mb-8"
         >
-          <option value="">-- Select a course --</option>
-          {courses.filter(course => course).map((course, idx) => (
-            <option key={idx} value={course}>{course}</option>
-          ))}
-        </select>
-      </div>
+          <h2 className="text-3xl font-bold text-white mb-2">Batch Details</h2>
+          <p className="text-gray-300">Track your batch progress and attendance</p>
+        </motion.div>
 
-      {selectedCourse && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex flex-wrap gap-2 mb-6 border-b pb-4">
-            {["Persuing", "Completed", "Pending"].map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-3 rounded-lg font-semibold transition-colors ${activeTab === tab ? "bg-blue-600 text-white shadow-lg" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+        {/* Course Selection */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="flex justify-center mb-8"
+        >
+          <div className="w-full md:w-2/3 lg:w-1/2">
+            <label htmlFor="course" className="block text-white text-sm font-semibold mb-2 text-center">
+              Select Your Course
+            </label>
+            <select
+              id="course"
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+              className="w-full p-3 border border-blue-600 rounded-lg bg-blue-900/50 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+            >
+              <option value="" className="bg-gray-800">-- Select a course --</option>
+              {courses.filter(course => course).map((course, idx) => (
+                <option key={idx} value={course} className="bg-gray-800">{course}</option>
+              ))}
+            </select>
+          </div>
+        </motion.div>
+
+        {/* Main Content */}
+        {selectedCourse && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="bg-blue-800/20 backdrop-blur-sm rounded-xl p-6 border border-blue-600/30"
+          >
+            {/* Course Info */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-center mb-6"
+            >
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Currently Viewing: <span className="text-blue-300">{selectedCourse}</span>
+              </h3>
+            </motion.div>
+
+            {/* Tabs */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="flex flex-wrap gap-2 mb-6 justify-center"
+            >
+              {["Persuing", "Completed", "Pending"].map(tab => (
+                <motion.button
+                  key={tab}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-3 rounded-lg font-semibold border transition duration-200 min-w-[120px] ${
+                    activeTab === tab 
+                      ? "bg-blue-600 text-white border-blue-500 shadow-lg" 
+                      : "bg-blue-900/50 text-blue-200 border-blue-700 hover:bg-blue-800/70"
                   }`}
-              >
-                {tab} Batches
-              </button>
-            ))}
-          </div>
+                >
+                  {tab}
+                </motion.button>
+              ))}
+            </motion.div>
 
-          <div className="min-h-40">
-            <h3 className="font-bold text-xl mb-4 text-gray-800">{activeTab} Batches for {selectedCourse}</h3>
-            {activeTab === "Pending" ? renderPendingList() : renderBatchTable()}
-          </div>
-        </div>
-      )}
+            {/* Batch Content */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+            >
+              <h3 className="font-bold text-xl mb-4 text-center text-white">
+                {activeTab} Batches
+                <span className="block text-sm font-normal text-gray-300 mt-1">
+                  ({batches[activeTab.toLowerCase()]?.length || 0} batches)
+                </span>
+              </h3>
+              <div className="min-h-[200px]">
+                {activeTab === "Pending" ? renderPendingList() : renderBatchTable()}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
 
-      {showAttendanceModal && selectedBatch && (
-        <Attendance
-          attendance={attendance}
-          selectedBatch={selectedBatch}
-          formatDate={formatDate}
-          onClose={() => setShowAttendanceModal(false)}
-        />
-      )}
+        {/* Loading Overlay */}
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm z-50"
+          >
+            <div className="bg-blue-900 p-6 rounded-lg shadow-xl border border-blue-600">
+              <div className="flex items-center space-x-3">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-6 h-6 border-2 border-blue-300 border-t-transparent rounded-full"
+                />
+                <span className="text-white">Loading batches...</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
+        {/* Attendance Modal */}
+        {showAttendanceModal && selectedBatch && (
+          <Attendance
+            attendance={attendance}
+            selectedBatch={selectedBatch}
+            formatDate={formatDate}
+            onClose={() => setShowAttendanceModal(false)}
+          />
+        )}
+      </motion.div>
     </div>
   );
 }
