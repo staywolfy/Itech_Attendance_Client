@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Login from "./components/Login";
+// import Profile from "./components/Profile";
 import DashboardLayout from "./components/DashboardLayout";
 import Dashboard from "./components/Dashboard";
 import Course from "./components/Course";
@@ -221,8 +222,11 @@ function App() {
             <Route path="/dashboard/batch" element={<Batch />} />
             <Route path="/dashboard/feedetails" element={<FeeDetails />} />
             <Route path="/dashboard/attendance" element={<Attendance />} />
+
+         
           </Route>
           <Route path="/" element={<Login />} />
+                      {/* <Route path="/profile" element={<Profile />} /> */}
         </Routes>
       </BrowserRouter>
 

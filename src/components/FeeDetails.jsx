@@ -51,9 +51,9 @@ export default function FeeDetails() {
         // Process payments to calculate correct running balance (oldest first for calculation)
         const processedPayments = calculateRunningBalance(payments);
         
-        // Sort processed payments by date descending (newest first) for display
+        // Sort processed payments by date ASCENDING (oldest first) for display
         const sortedProcessedPayments = [...processedPayments].sort((a, b) => 
-          new Date(b.Dates) - new Date(a.Dates)
+          new Date(a.Dates) - new Date(b.Dates)
         );
         
         const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.Paid || 0), 0);
@@ -137,9 +137,9 @@ export default function FeeDetails() {
     return "bg-gray-500/30 text-gray-300";
   };
 
-  // Use the LATEST calculated balance for total balance (first item in the sorted array)
+  // Use the LATEST calculated balance for total balance (last item in the ascending sorted array)
   const totalBalance = processedPaymentData.length > 0 
-    ? processedPaymentData[0]?.calculatedBalance  // First item is the latest payment
+    ? processedPaymentData[processedPaymentData.length - 1]?.calculatedBalance  // Last item is the latest payment in ascending order
     : 0;
 
   return (
@@ -157,87 +157,52 @@ export default function FeeDetails() {
           className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4"
         >
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/dashboard", { state: { user } })}
-              className="flex items-center gap-2 text-blue-300 hover:text-white px-4 py-2 rounded-lg border border-blue-600 hover:bg-blue-700/40 transition duration-200"
-            >
-              <FaArrowLeft />
-              <span>Back</span>
-            </button>
             <h1 className="text-3xl font-bold text-white">Fee Details</h1>
           </div>
-          <button
-            onClick={fetchPaymentDetails}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+        </motion.div>
+
+        {/* Summary Cards */}
+        {!loading && processedPaymentData.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8"
           >
-            Refresh
-          </button>
-        </motion.div>
-
-        {/* Student Info */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="bg-blue-800/20 backdrop-blur-sm border border-blue-600/30 rounded-xl p-6 text-white mb-8"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Student Name */}
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-blue-700/40 rounded-full">
-                <FaUser className="text-blue-300" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-300">Student Name</p>
-                <p className="text-lg font-semibold">{user.name || "N/A"}</p>
-              </div>
+            <div className="bg-blue-700/30 p-6 rounded-lg border border-blue-500/40 text-white text-center">
+              <h3 className="text-lg font-semibold text-blue-300 mb-2">
+                Course Fees
+              </h3>
+              <p className="text-2xl font-bold flex justify-center items-center text-blue-200">
+                <FaRupeeSign className="mr-1" />
+                {formatCurrency(summary.totalAmount)}
+              </p>
             </div>
-
-            {/* Course Name */}
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-green-700/40 rounded-full">
-                <FaReceipt className="text-green-300" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-300">Course Name</p>
-                <p className="text-lg font-semibold">
-                  {paymentData[0]?.course || "N/A"}
+            <div className="bg-green-700/30 p-6 rounded-lg border border-green-500/40 text-white text-center">
+              <h3 className="text-lg font-semibold text-green-300 mb-2">
+                Total Paid
+              </h3>
+              <p className="text-2xl font-bold flex justify-center items-center text-green-200">
+                <FaRupeeSign className="mr-1" />
+                {formatCurrency(summary.totalPaid)}
+              </p>
+            </div>
+            <div className="bg-red-700/30 p-6 rounded-lg border border-red-500/40 text-white text-center">
+              <h3 className="text-lg font-semibold text-red-300 mb-2">
+                Total Balance
+              </h3>
+              <p className="text-2xl font-bold flex justify-center items-center text-red-200">
+                <FaRupeeSign className="mr-1" />
+                {formatCurrency(summary.totalDue)}
+              </p>
+              {processedPaymentData.length > 0 && (
+                <p className="text-xs text-gray-300 mt-1">
+                  As of {formatDate(processedPaymentData[processedPaymentData.length - 1]?.Dates)}
                 </p>
-              </div>
+              )}
             </div>
-
-            {/* Course Fees */}
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-purple-700/40 rounded-full">
-                <FaRupeeSign className="text-purple-300" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-300">Course Fees</p>
-                <p className="text-lg font-semibold text-purple-300">
-                  ₹{formatCurrency(paymentData[0]?.courseFees || 0)}
-                </p>
-              </div>
-            </div>
-
-            {/* Total Balance - Now shows latest balance (₹44,900.00) */}
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-red-700/40 rounded-full">
-                <FaRupeeSign className="text-red-300" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-300">Total Balance</p>
-                <p className="text-lg font-semibold text-red-400">
-                  ₹{formatCurrency(totalBalance)}
-                </p>
-                {processedPaymentData.length > 0 && (
-                  <p className="text-xs text-gray-400">
-                    As of {formatDate(processedPaymentData[0]?.Dates)}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Error */}
         {error && (
@@ -251,12 +216,12 @@ export default function FeeDetails() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="bg-blue-800/20 border border-blue-600/30 backdrop-blur-sm rounded-xl overflow-hidden"
+          className="bg-blue-800/20 border border-blue-600/30 backdrop-blur-sm rounded-xl overflow-hidden mt-8"
         >
           <div className="px-6 py-4 border-b border-blue-600/30">
             <h2 className="text-xl font-semibold text-white flex items-center">
               <FaReceipt className="mr-2 text-blue-300" />
-              Payment History (Newest First)
+              Payment History
             </h2>
           </div>
 
@@ -275,12 +240,12 @@ export default function FeeDetails() {
                 <thead className="bg-blue-900/40">
                   <tr>
                     {[
+                      "Date",
+                      "Paid",
+                      "Balance",
+                      "Course Fees",
                       "Receipt No",
                       "Course",
-                      "Total Amount",
-                      "Paid",
-                      "Due",
-                      "Date",
                       "Status",
                     ].map((h) => (
                       <th
@@ -301,10 +266,15 @@ export default function FeeDetails() {
                       transition={{ delay: i * 0.05 }}
                       className="border-t border-blue-600/20 hover:bg-blue-700/30 transition"
                     >
-                      <td className="px-6 py-3">{p.Receipt || "N/A"}</td>
-                      <td className="px-6 py-3">{p.course || "N/A"}</td>
-                      <td className="px-6 py-3 text-blue-300">
-                        ₹{formatCurrency(p.courseFees)}
+                      <td className="px-6 py-3">
+                        <div className="flex flex-col">
+                          <span>{formatDate(p.Dates)}</span>
+                          {i === processedPaymentData.length - 1 && (
+                            <span className="text-xs text-green-400 font-medium">
+                              (Latest)
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-3 text-green-300">
                         ₹{formatCurrency(p.Paid)}
@@ -312,16 +282,11 @@ export default function FeeDetails() {
                       <td className="px-6 py-3 text-red-300">
                         ₹{formatCurrency(p.calculatedBalance)}
                       </td>
-                      <td className="px-6 py-3">
-                        <div className="flex flex-col">
-                          <span>{formatDate(p.Dates)}</span>
-                          {i === 0 && (
-                            <span className="text-xs text-green-400 font-medium">
-                              (Latest)
-                            </span>
-                          )}
-                        </div>
+                      <td className="px-6 py-3 text-blue-300">
+                        ₹{formatCurrency(p.courseFees)}
                       </td>
+                      <td className="px-6 py-3">{p.Receipt || "N/A"}</td>
+                      <td className="px-6 py-3">{p.course || "N/A"}</td>
                       <td className="px-6 py-3">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
@@ -338,44 +303,6 @@ export default function FeeDetails() {
             </div>
           )}
         </motion.div>
-
-        {/* Summary */}
-        {!loading && processedPaymentData.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8"
-          >
-            <div className="bg-green-700/30 p-6 rounded-lg border border-green-500/40 text-white text-center">
-              <h3 className="text-lg font-semibold text-green-300 mb-2">
-                Total Paid
-              </h3>
-              <p className="text-2xl font-bold flex justify-center items-center text-green-200">
-                <FaRupeeSign className="mr-1" />
-                {formatCurrency(summary.totalPaid)}
-              </p>
-            </div>
-            <div className="bg-red-700/30 p-6 rounded-lg border border-red-500/40 text-white text-center">
-              <h3 className="text-lg font-semibold text-red-300 mb-2">
-                Total Due
-              </h3>
-              <p className="text-2xl font-bold flex justify-center items-center text-red-200">
-                <FaRupeeSign className="mr-1" />
-                {formatCurrency(summary.totalDue)}
-              </p>
-            </div>
-            <div className="bg-blue-700/30 p-6 rounded-lg border border-blue-500/40 text-white text-center">
-              <h3 className="text-lg font-semibold text-blue-300 mb-2">
-                Total Amount
-              </h3>
-              <p className="text-2xl font-bold flex justify-center items-center text-blue-200">
-                <FaRupeeSign className="mr-1" />
-                {formatCurrency(summary.totalAmount)}
-              </p>
-            </div>
-          </motion.div>
-        )}
       </motion.div>
     </div>
   );
